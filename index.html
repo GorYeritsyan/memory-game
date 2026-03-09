@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://kit.fontawesome.com/849312d1d4.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="app.css">
+    <title>Document</title>
+</head>
+<body>
+    <main class="py-10">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col items-center justify-center min-h-screen h-full gap-10">
+                <div id="header" class="flex flex-col justify-center gap-4">
+                    <h1 class="text-4xl font-bold">Memory Game</h1>
+                    <form id="select-form" class="flex gap-3">
+                        <select name="mode" id="select"></select>
+                    </form>
+                </div>
+
+                <div id="cards-wrapper"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal -->
+    <div id="modal" class="fixed hidden top-0 size-full bg-[#00000066]">
+        <div class="absolute top-1/2 left-1/2 -translate-1/2">
+            <div class="relative min-w-100 flex flex-col items-center gap-6 rounded-xl bg-white py-6 px-5">
+                <button id="close-btn" class="absolute top-3 right-4 text-2xl cursor-pointer">
+                    <i class="fa-solid fa-x"></i>
+                </button>
+                <h1 class="text-3xl font-semibold">Congratulations</h1>
+                <p class="text-center text-4xl font-bold text-green-600">You Win!</p>
+                <div>
+                    <button id="play-btn" class="px-3 py-1 rounded-sm bg-green-600 text-white font-semibold hover:bg-green-700 cursor-pointer">Play Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./index.js"></script>
+</body>
+</html>
