@@ -87,6 +87,11 @@ const images = [
     }
 ];
 
+// Variables to store first and second cards when selected
+let firstCard;
+let secondCard;
+let isLocked = false;
+
 // Render Select tag from Game Modes
 window.addEventListener("DOMContentLoaded", () => {
     const select = document.getElementById('select');
@@ -97,15 +102,10 @@ window.addEventListener("DOMContentLoaded", () => {
         option.textContent = key + " " + `(${gameModes[key].rows}x${gameModes[key].columns})`;
         select.appendChild(option);
     });
-
-    // Button to start game
-    const playButton = document.createElement("button");
-    playButton.className = 'px-3 py-2 bg-green-600 hover:bg-green-700 text-white cursor-pointer font-semibold rounded-sm';
-    playButton.textContent = 'Play';
-
-    selectForm.appendChild(playButton);
-    selectForm.addEventListener('submit', handleSelectFormSubmit);
 });
+
+// Add event listener to handle select form submit
+selectForm.addEventListener('submit', handleSelectFormSubmit);
 
 // Select Form Submit Handler
 function handleSelectFormSubmit(e) {
@@ -113,7 +113,7 @@ function handleSelectFormSubmit(e) {
 
     // Get game mode from form data
     const formData = new FormData(e.target);
-    const { mode } = Object.fromEntries(formData);
+    const mode = formData.get('mode');
 
     const gameColumns = gameModes[mode]?.columns;
     const gameRows = gameModes[mode]?.rows;
@@ -124,7 +124,10 @@ function handleSelectFormSubmit(e) {
     // Render new random images
     renderRandomImages(gameColumns, gameRows);
 
+    // Remove Select form
     selectForm.remove();
+
+    // Add Reset button to reset game
     const resetButton = document.createElement("button");
     resetButton.id = 'reset-btn';
     resetButton.className = 'px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white cursor-pointer font-semibold rounded-sm w-fit self-center';
@@ -136,19 +139,28 @@ function handleSelectFormSubmit(e) {
 
 // Function to change grid columns and rows
 function changeCardsLayout(columns = 3, rows = 4) {
-    // Grid Columns Variants
-    const gridColumns = {};
-
-    // Grid Rows Variants
-    const gridRows = {}
-
-    Object.values(gameModes).forEach(value => {
-        gridColumns[value.columns] = `grid-cols-[repeat(${value.columns},minmax(140px,1fr))]`;
-        gridRows[value.rows] = `grid-rows-[repeat(${value.rows},180px)]`
-    })
+    cardsWrapper.className = `grid gap-5`;
 
     // Dynamic change grid columns and rows
-    cardsWrapper.className = `grid gap-5 ${gridColumns[columns]} ${gridRows[rows]}`;
+    cardsWrapper.style.gridTemplateColumns = `repeat(${columns},minmax(140px,1fr))`;
+    cardsWrapper.style.gridTemplateRows = `repeat(${rows},180px)`;
+}
+
+// Function to remove all cards and render new random images
+function renderRandomImages(columns, rows) {
+    // Sort All images
+    images.sort(() => Math.random() - 0.5);
+
+    // Get Game images based on columns and rows
+    const gameImages = images.slice(0, columns * rows / 2);
+
+    // Get duplicated random images from game images
+    const randomImages = [...gameImages, ...gameImages].toSorted(() => Math.random() - 0.5);
+
+    // Render new random images
+    randomImages.forEach(image => {
+        renderCard(image.id, image.url);
+    });
 }
 
 // Function to render cards based on image url
@@ -185,39 +197,6 @@ function renderCard(cardId, imageUrl) {
     cardsWrapper.appendChild(cardWrapper);
 }
 
-// Function to remove all cards and render new random images
-function renderRandomImages(columns, rows) {
-    // Sort All images
-    images.sort(() => Math.random() - 0.5);
-
-    // Get Game images based on columns and rows
-    const gameImages = images.slice(0, columns * rows / 2);
-
-    // Get duplicated random images from game images
-    const randomImages = [...gameImages, ...gameImages].toSorted(() => Math.random() - 0.5);
-
-    // // Remove all rendered cards
-    // cardsWrapper.innerHTML = null;
-
-    console.log(randomImages)
-    // Render new random images
-    randomImages.forEach(image => {
-        renderCard(image.id, image.url);
-    });
-}
-
-// Variables to store first and second cards when selected
-let firstCard;
-let secondCard;
-let isLocked = false;
-
-// Reset selected first and second cards to select again
-function reset() {
-    firstCard = undefined;
-    secondCard = undefined;
-    isLocked = false;
-}
-
 function handleCardFlip(e) {
     const cardWrapper = e.currentTarget;
     const card = cardWrapper.firstElementChild;
@@ -226,7 +205,7 @@ function handleCardFlip(e) {
     if (isLocked || card.classList.contains("rotate-y-180")) return;
 
     // Rotate card
-    e.currentTarget.firstElementChild.classList.toggle('rotate-y-180');
+    card.classList.toggle('rotate-y-180');
 
     // If there is no first card
     if (!firstCard) {
@@ -263,6 +242,13 @@ function handleCardFlip(e) {
     }
 }
 
+// Reset selected first and second cards to select again
+function reset() {
+    firstCard = undefined;
+    secondCard = undefined;
+    isLocked = false;
+}
+
 // Function to close modal
 function closeModal() {
     modal.classList.add('hidden');
@@ -273,24 +259,23 @@ modal.addEventListener('click', (e) => {
     if(e.target.id === 'modal') {
         closeModal()
     }
-})
+});
 
 // Event listener to Close modal when clicked close button
 closeBtn.addEventListener('click', closeModal);
+
+// Function to reset game
+function resetGame() {
+    const resetButton = document.getElementById('reset-btn');
+    resetButton.remove();
+    cardsWrapper.innerHTML = '';
+    cardsWrapper.className = '';
+
+    header.appendChild(selectForm);
+}
 
 // Reload page to play again
 playBtn.addEventListener("click", () => {
     closeModal()
     resetGame()
 });
-
-// Function to reset game
-function resetGame() {
-    const resetButton = document.getElementById('reset-btn');
-    resetButton.remove();
-    cardsWrapper.innerHTML = null;
-    cardsWrapper.className = '';
-
-    selectForm.addEventListener('submit', handleSelectFormSubmit)
-    header.appendChild(selectForm);
-}
