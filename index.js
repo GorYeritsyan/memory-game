@@ -99,13 +99,29 @@ window.addEventListener("DOMContentLoaded", () => {
     Object.keys(gameModes).forEach((key) => {
         const option = document.createElement("option");
         option.value = key;
-        option.textContent = key + " " + `(${gameModes[key].rows}x${gameModes[key].columns})`;
+        option.textContent = `${key} (${gameModes[key].rows}x${gameModes[key].columns})`;
         select.appendChild(option);
     });
 });
 
 // Add event listener to handle select form submit
 selectForm.addEventListener("submit", handleSelectFormSubmit);
+
+// Event listener to Close Modal when clicked the outside of modal
+modal.addEventListener("click", (e) => {
+    if (e.target.id === "modal") {
+        closeModal();
+    }
+});
+
+// Event listener to Close modal when clicked close button
+closeBtn.addEventListener("click", closeModal);
+
+// Reload page to play again
+playBtn.addEventListener("click", () => {
+    closeModal();
+    resetGame();
+});
 
 // Select Form Submit Handler
 function handleSelectFormSubmit(e) {
@@ -148,14 +164,14 @@ function changeCardsLayout(columns = 3, rows = 4) {
 
 // Function to remove all cards and render new random images
 function renderRandomImages(columns, rows) {
-    // Sort All images
-    images.sort(() => Math.random() - 0.5);
+    // Shuffle All images
+    const shuffledImages = shuffle(images);
 
     // Get Game images based on columns and rows
-    const gameImages = images.slice(0, columns * rows / 2);
+    const gameImages = shuffledImages.slice(0, columns * rows / 2);
 
     // Get duplicated random images from game images
-    const randomImages = [...gameImages, ...gameImages].toSorted(() => Math.random() - 0.5);
+    const randomImages = shuffle([...gameImages, ...gameImages]);
 
     // Render new random images
     randomImages.forEach(image => {
@@ -164,11 +180,11 @@ function renderRandomImages(columns, rows) {
 }
 
 // Function to render cards based on image url
-function renderCard(cardId, imageUrl) {
+function renderCard(imageId, imageUrl) {
     const cardWrapper = document.createElement("div");
-    cardWrapper.dataset.id = cardId;
+    cardWrapper.dataset.id = imageId;
     cardWrapper.className = "bg-transparent perspective-midrange rounded-md w-full cursor-pointer";
-    cardWrapper.addEventListener("click", handleCardFlip)
+    cardWrapper.addEventListener("click", handleCardFlip);
 
     const card = document.createElement("div");
     card.className = "relative w-full h-full rounded-md text-center transform-3d shadow shadow-[0_0_8px_2px_gray] rounded-xl transition-all duration-500";
@@ -202,10 +218,10 @@ function handleCardFlip(e) {
     const card = cardWrapper.firstElementChild;
 
     // If is locked or already rotated then don't do anything
-    if (isLocked || card.classList.contains("rotate-y-180")) return;
+    if (isLocked || card.classList.contains("flipped")) return;
 
     // Rotate card
-    card.classList.toggle("rotate-y-180");
+    card.classList.toggle("flipped");
 
     // If there is no first card
     if (!firstCard) {
@@ -218,13 +234,13 @@ function handleCardFlip(e) {
     isLocked = true;
 
     // Rotate selected cards if first and second cards don't matching
-    if(firstCard.dataset.id !== secondCard.dataset.id) {
+    if (firstCard.dataset.id !== secondCard.dataset.id) {
         setTimeout(() => {
-            firstCard.firstElementChild.classList.remove("rotate-y-180");
-            secondCard.firstElementChild.classList.remove("rotate-y-180");
+            firstCard.firstElementChild.classList.remove("flipped");
+            secondCard.firstElementChild.classList.remove("flipped");
 
             reset();
-        }, 500)
+        }, 500);
 
         return;
     }
@@ -233,11 +249,11 @@ function handleCardFlip(e) {
 
     // Check if every card is already rotated or not
     // If rotated then show modal
-    const isMatching = [...cardsWrapper.children].every(elem => {
-        return elem.firstElementChild.classList.contains("rotate-y-180");
+    const isAllFlipped = [...cardsWrapper.children].every(elem => {
+        return elem.firstElementChild.classList.contains("flipped");
     });
 
-    if(isMatching) {
+    if (isAllFlipped) {
         modal.classList.remove("hidden");
     }
 }
@@ -254,16 +270,6 @@ function closeModal() {
     modal.classList.add("hidden");
 }
 
-// Event listener to Close Modal when clicked the outside of modal
-modal.addEventListener("click", (e) => {
-    if(e.target.id === "modal") {
-        closeModal();
-    }
-});
-
-// Event listener to Close modal when clicked close button
-closeBtn.addEventListener("click", closeModal);
-
 // Function to reset game
 function resetGame() {
     const resetButton = document.getElementById("reset-btn");
@@ -274,8 +280,7 @@ function resetGame() {
     header.appendChild(selectForm);
 }
 
-// Reload page to play again
-playBtn.addEventListener("click", () => {
-    closeModal();
-    resetGame();
-});
+// Function to shuffle given array
+function shuffle(array) {
+    return array.toSorted(() => Math.random() - 0.5);
+}
